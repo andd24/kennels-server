@@ -1,8 +1,8 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from views import get_all_animals, get_single_animal, get_single_location, get_all_locations, create_animal, create_location
-from views.customer_requests import create_customer, get_all_customers, get_single_customer
-from views.employees_requests import create_employee, get_all_employees, get_single_employee
+from views import get_all_animals, get_single_animal, get_single_location, get_all_locations, create_animal, create_location, delete_animal, delete_location
+from views.customer_requests import create_customer, delete_customer, get_all_customers, get_single_customer
+from views.employees_requests import create_employee, get_all_employees, get_single_employee, delete_employee
 
 
 # Here's a class. It inherits from another class.
@@ -117,6 +117,26 @@ class HandleRequests(BaseHTTPRequestHandler):
         """
         self.do_POST()
         
+    def do_DELETE(self):
+        # Set a 204 response code
+        self._set_headers(204)
+
+        # Parse the URL
+        (resource, id) = self.parse_url(self.path)
+
+        # Delete a single animal from the list
+        if resource == "animals":
+            delete_animal(id)
+        elif resource == "locations":
+            delete_location(id)
+        elif resource == "employees":
+            delete_employee(id)
+        elif resource == "customers":
+            delete_customer(id)
+
+        # Encode the new animal and send in response
+        self.wfile.write("".encode())
+        
     def parse_url(self, path):
         # Just like splitting a string in JavaScript. If the
         # path is "/animals/1", the resulting list will
@@ -137,6 +157,8 @@ class HandleRequests(BaseHTTPRequestHandler):
             pass  # Request had trailing slash: /animals/
 
         return (resource, id)  # This is a tuple
+    
+    
 
 
 # This function is not inside the class. It is the starting
