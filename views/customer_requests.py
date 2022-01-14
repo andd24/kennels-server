@@ -1,3 +1,7 @@
+import sqlite3
+import json
+from models import Customer
+
 CUSTOMERS = [
     {
       "id": 1,
@@ -25,10 +29,10 @@ CUSTOMERS = [
     }
 ]
 
-def get_all_customers():
+def get_all_customers2():
     return CUSTOMERS
 
-def get_single_customer(id):
+def get_single_customer2(id):
     requested_customer = None
     for customer in CUSTOMERS:
         if customer["id"] == id:
@@ -56,4 +60,63 @@ def update_customer(id, new_customer):
         if customer["id"] == id:
             CUSTOMERS[index] = new_customer
             break
+        
+def get_all_customers():
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        SELECT
+            c.id,
+            c.name,
+            c.address,
+            c.email,
+            c.password
+        FROM customer c
+        """)
+
+        customers = []
+
+        dataset = db_cursor.fetchall()
+
+        for row in dataset:
+
+            # Create an animal instance from the current row.
+            # Note that the database fields are specified in
+            # exact order of the parameters defined in the
+            # Animal class above.
+            customer = Customer(row['id'], row['name'], row['address'], row['email'], row['password'])
+
+            customers.append(customer.__dict__)
+
+    # Use `json` package to properly serialize list as JSON
+    return json.dumps(customers)
+
+def get_single_customer(id):
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        # Use a ? parameter to inject a variable's value
+        # into the SQL statement.
+        db_cursor.execute("""
+        SELECT
+            c.id,
+            c.name,
+            c.address,
+            c.email,
+            c.password
+        FROM customer c
+        WHERE c.id = ?
+        """, ( id, ))
+
+        # Load the single result into memory
+        data = db_cursor.fetchone()
+
+        # Create an animal instance from the current row
+        customer = Customer(data['id'], data['name'], data['address'], data['email'], data['password'])
+
+        return json.dumps(customer.__dict__)
         
