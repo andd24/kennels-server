@@ -50,7 +50,7 @@ def create_location(location):
     LOCATIONS.append(location)
     return location
   
-def delete_location(id):
+def delete_location2(id):
     location_index = -1
     for index, location in enumerate(LOCATIONS):
         if location["id"] == id:
@@ -59,7 +59,7 @@ def delete_location(id):
     if location_index >= 0:
         LOCATIONS.pop(location_index)
 
-def update_location(id, new_location):
+def update_location2(id, new_location):
     for index, location in enumerate(LOCATIONS):
         if location["id"] == id:
             LOCATIONS[index] = new_location
@@ -119,3 +119,35 @@ def get_single_location(id):
         location = Location(data['id'], data['name'], data['address'])
 
         return json.dumps(location.__dict__)
+    
+def delete_location(id):
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        DELETE FROM location
+        WHERE id = ?
+        """, (id, ))
+        
+def update_location(id, new_location):
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Location
+            SET
+                name = ?,
+                address = ?,
+        WHERE id = ?
+        """, (new_location['name'], new_location['address'], id, ))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
+    else:
+        # Forces 204 response by main module
+        return True
