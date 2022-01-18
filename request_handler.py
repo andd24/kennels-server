@@ -105,7 +105,7 @@ class HandleRequests(BaseHTTPRequestHandler):
         # the orange squiggle, you'll define the create_animal
         # function next.
         if resource == "animals":
-            new_resource = create_animal(post_body)        
+            new_resource = create_animal(post_body)   
         elif resource == "locations":
             new_resource = create_location(post_body)
         elif resource == "employees":
